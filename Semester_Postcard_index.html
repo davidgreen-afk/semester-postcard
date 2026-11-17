@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postcard from the Semester</title>
+<style>
+:root{--paper:#FBF4E4;--ink:#2B2A33;--teal:#0E6F75;--tealdk:#094C51;--coral:#E85D4A;--mustard:#F2B134;--line:#E3D6B1;--card:#FFFDF6;--serif:Georgia,'Times New Roman',serif;--sans:Calibri,'Segoe UI',Arial,sans-serif}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:var(--sans);font-size:17px;line-height:1.55;color:var(--ink);background:var(--paper)}
+header{padding:22px 20px 6px;max-width:960px;margin:0 auto}
+header h1{font-family:var(--serif);font-size:34px;line-height:1.1;margin:0;color:var(--tealdk)}
+header p{margin:6px 0 0;color:#5b5a63}
+#dots{display:flex;gap:6px;max-width:960px;margin:14px auto 0;padding:0 20px}
+#dots i{flex:1;height:6px;border-radius:3px;background:var(--line)}#dots i.on{background:var(--coral)}#dots i.cur{background:var(--teal)}
+main{max-width:960px;margin:0 auto;padding:14px 20px 70px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:22px 24px}
+h2{font-family:var(--serif);font-size:26px;margin:0 0 4px;color:var(--tealdk)}
+p{margin:.5em 0;max-width:68ch}.muted{color:#6a6972;font-size:15px}
+.scenes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:14px 0}
+.sc{border:3px solid transparent;border-radius:12px;background:#fff;padding:0;cursor:pointer;overflow:hidden;text-align:left;font:inherit;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.sc canvas{display:block;width:100%;height:auto}.sc span{display:block;padding:7px 10px;font-weight:bold;color:var(--tealdk)}
+.sc[aria-pressed=true]{border-color:var(--coral);box-shadow:0 0 0 3px var(--mustard)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.chip{font:inherit;font-size:15.5px;background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;color:var(--ink)}
+.chip:hover{border-color:var(--teal)}.chip[aria-pressed=true]{background:var(--teal);border-color:var(--teal);color:#fff}
+.chip.cor[aria-pressed=true]{background:var(--coral);border-color:var(--coral)}
+label.q{display:block;font-weight:bold;margin:14px 0 4px;color:var(--tealdk)}
+textarea,input[type=text]{width:100%;font:inherit;color:var(--ink);padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:#fff}
+textarea{min-height:110px;resize:vertical}
+textarea:focus,input:focus,button:focus-visible{outline:3px solid var(--mustard);border-color:var(--teal)}
+.count{font-size:13.5px;color:#6a6972;text-align:right}
+.starters{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:20px}
+button.b{font:inherit;font-weight:bold;border-radius:10px;padding:10px 22px;border:2px solid var(--teal);background:var(--teal);color:#fff;cursor:pointer}
+button.b.alt{background:#fff;color:var(--teal)}button.b.ghost{background:none;border-color:var(--line);color:var(--ink);font-weight:normal}button.b.coral{background:var(--coral);border-color:var(--coral)}
+button.b:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-size:15px;color:#6a6972;margin:2px 0 6px}
+.pcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px;margin:16px 0}
+.pcs canvas{width:100%;height:auto;display:block;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.25);background:#fff}
+details{margin:12px 0}summary{cursor:pointer;color:var(--teal);font-weight:bold}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--tealdk);color:#fff;padding:10px 18px;border-radius:10px;display:none;z-index:9}
+@media (max-width:520px){.pcs{grid-template-columns:1fr}.card{padding:16px}}
+</style>
+</head>
+<body>
+<header><h1>Postcard from the Semester</h1><p>A quick, ungraded send-off. Make a postcard that is all yours.</p></header>
+<div id="dots" aria-hidden="true"></div>
+<main id="main"></main>
+<div id="toast" role="status"></div>
+<script>
+(function(){'use strict';
+/* ====== EDIT THESE LISTS to match your topics ====== */
+var TOPICS=[
+ {id:'footprint',name:'Ecological Footprint',tag:'Tread lightly: every step leaves a footprint.'},
+ {id:'ethics',name:'Environmental Science, Environmentalism, Ecology, and Ethics',short:'Science, Environmentalism, and Ethics',tag:'Ask what we can do, and what we should do.'},
+ {id:'method',name:'Scientific Method and Peer-reviewed Articles',tag:'Show your evidence, and check your sources.'},
+ {id:'spheres',name:'Energy and the “Spheres”',tag:'Energy flows, and everything is connected.'},
+ {id:'chem',name:'Science and Chemistry',tag:'Everything is made of something.'},
+ {id:'principles',name:'Ecology Principles',tag:'Everything is connected to everything else.'},
+ {id:'panther',name:'Florida Panthers and Wildlife Corridors',tag:'Wildlife needs room to roam, and paths to get there.'},
+ {id:'island',name:'Biodiversity and Island Evolution',tag:'Islands show how life changes, and how fragile it is.'},
+ {id:'popgrowth',name:'Population Growth',tag:'Growth has limits, and numbers tell stories.'},
+ {id:'stork',name:'Wood Storks and Human Population Growth',tag:'Even a wading bird can tell a story about people.'},
+ {id:'water',name:'Water Resources',tag:'Water connects everything, so every drop counts.'},
+ {id:'food',name:'Food Resources and Population Dynamics',tag:'Every meal has a story, from soil to plate.'},
+ {id:'land',name:'Land Ethic',tag:'Be a good member of the land community.'},
+ {id:'waste',name:'Waste Management and “The Story of Stuff”',tag:'There is no “away” to throw things.'},
+ {id:'tox',name:'Toxicology and Human Health',tag:'The dose makes the poison.'},
+ {id:'air',name:'Atmosphere and Outdoor Air Pollution',tag:'We all share one sky and one breath of air.'},
+ {id:'energy',name:'Energy Resources',tag:'Every energy choice has trade-offs.'},
+ {id:'climate',name:'Climate',tag:'One planet, one climate, and shared choices.'}];
+var PLEDGES=['Look up the source before I share a claim.','Notice where my water comes from, and use a little less.','Learn where one of my meals came from.','Read the label on something I use every day.','Take one thing out of my routine that I toss without thinking.','Switch something off when I am not using it.','Walk, bike, or share a ride for one trip a week.','Go outside and notice one living thing I usually miss.','Talk with someone who disagrees with me, and listen first.','Leave a place better than I found it.'];
+var STARTERS=['One thing that surprised me was…','Something I will never see the same way is…','The idea I want to take with me is…','If I could tell my first-week self one thing, it would be…'];
+var RECIPIENTS=[{id:'me',dear:'Dear future me,',to:'Future me'},{id:'friend',dear:'Dear friend,',to:'A good friend'},{id:'family',dear:'Dear family,',to:'My family'},{id:'planet',dear:'Dear planet,',to:'Planet Earth'},{id:'someone',dear:'Dear someone who needs a smile,',to:'Someone who needs a smile'}];
+var SCENES=[{id:'wetland',name:'The Wetlands',place:'the Wetlands',stamp:'#2C8A91'},{id:'island',name:'The Island',place:'the Island',stamp:'#1D9BC0'},{id:'corridor',name:'The Wild Corridor',place:'the Wild Corridor',stamp:'#4B3F7A'},
+ {id:'farm',name:'The Farm',place:'the Farm',stamp:'#7FA44A'},{id:'city',name:'The City Lights',place:'the City Lights',stamp:'#E0714A'},{id:'mountain',name:'The Mountain River',place:'the Mountain River',stamp:'#4C86B8'}];
+function topic(id){for(var i=0;i<TOPICS.length;i++)if(TOPICS[i].id===id)return TOPICS[i];return null;}
+function byId(a,id){for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
+
+/* ====== drawing helpers (all scenes use a 1500 x 1000 space) ====== */
+function seeded(s){return function(){s=(s*16807)%2147483647;return(s-1)/2147483646;};}
+function sky(c,top,bot,h){var g=c.createLinearGradient(0,0,0,h||1000);g.addColorStop(0,top);g.addColorStop(1,bot);c.fillStyle=g;c.fillRect(0,0,1500,1000);}
+function disc(c,x,y,r,col,glow){if(glow){var g=c.createRadialGradient(x,y,r*.6,x,y,r*2.6);g.addColorStop(0,glow);g.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=g;c.fillRect(x-r*3,y-r*3,r*6,r*6);}c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();}
+function cloud(c,x,y,s,a){c.fillStyle='rgba(255,255,255,'+(a||.9)+')';[[0,0,38],[42,-14,46],[92,0,36],[46,10,40]].forEach(function(p){c.beginPath();c.arc(x+p[0]*s,y+p[1]*s,p[2]*s,0,Math.PI*2);c.fill();});}
+function hills(c,base,amp,f,ph,col,bot){c.beginPath();c.moveTo(0,bot||1000);for(var x=0;x<=1500;x+=10)c.lineTo(x,base+Math.sin(x*f+ph)*amp+Math.sin(x*f*2.3+ph*1.7)*amp*.4);c.lineTo(1500,bot||1000);c.closePath();c.fillStyle=col;c.fill();}
+function pine(c,x,y,s,col){c.fillStyle='#5A3E2B';c.fillRect(x-5*s,y-20*s,10*s,24*s);c.fillStyle=col;for(var i=0;i<3;i++){var w=(52-i*10)*s,t=y-(30+i*34)*s;c.beginPath();c.moveTo(x,t-48*s);c.lineTo(x-w,t+10*s);c.lineTo(x+w,t+10*s);c.closePath();c.fill();}}
+function palm(c,x,y,s,lean){c.strokeStyle='#7A5230';c.lineWidth=16*s;c.lineCap='round';c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+lean*.6*s,y-130*s,x+lean*s,y-230*s);c.stroke();var tx=x+lean*s,ty=y-230*s;c.strokeStyle='#2E8B4A';c.lineWidth=12*s;[[-110,-10],[-80,-60],[-30,-85],[30,-85],[80,-60],[110,-10]].forEach(function(p){c.beginPath();c.moveTo(tx,ty);c.quadraticCurveTo(tx+p[0]*.6*s,ty+p[1]*s-30*s,tx+p[0]*s,ty+p[1]*s+40*s);c.stroke();});c.fillStyle='#6B4423';c.beginPath();c.arc(tx,ty+8*s,9*s,0,7);c.fill();}
+function reeds(c,x,y,n,h,col,r){c.strokeStyle=col;c.lineWidth=5;c.lineCap='round';for(var i=0;i<n;i++){var dx=(r()-.5)*90,hh=h*(.6+r()*.5),bx=x+i*14-n*7;c.beginPath();c.moveTo(bx,y);c.quadraticCurveTo(bx+dx*.3,y-hh*.6,bx+dx,y-hh);c.stroke();if(i%3===0){c.fillStyle='#7A5A3A';c.beginPath();c.ellipse(bx+dx,y-hh-14,7,20,dx*.01,0,7);c.fill();}}}
+function stork(c,x,y,s){c.save();c.translate(x,y);c.scale(s,s);c.strokeStyle='#4A4A55';c.lineWidth=7;c.lineCap='round';c.beginPath();c.moveTo(-14,60);c.lineTo(-14,150);c.moveTo(16,60);c.lineTo(16,150);c.stroke();c.fillStyle='#FDFBF4';c.beginPath();c.ellipse(0,30,62,38,-.15,0,7);c.fill();c.fillStyle='#2F2F3A';c.beginPath();c.moveTo(-30,22);c.quadraticCurveTo(-58,38,-72,18);c.quadraticCurveTo(-42,14,-30,22);c.fill();c.strokeStyle='#FDFBF4';c.lineWidth=18;c.beginPath();c.moveTo(40,10);c.quadraticCurveTo(76,-18,64,-62);c.stroke();c.fillStyle='#7A6B63';c.beginPath();c.arc(66,-70,17,0,7);c.fill();c.fillStyle='#E5A03A';c.beginPath();c.moveTo(78,-76);c.quadraticCurveTo(122,-62,136,-34);c.quadraticCurveTo(100,-58,78,-62);c.fill();c.fillStyle='#fff';c.beginPath();c.arc(70,-74,3.5,0,7);c.fill();c.restore();}
+function building(c,x,y,w,h,col,lit,r){c.fillStyle=col;c.fillRect(x,y,w,h);for(var wy=y+18;wy<y+h-20;wy+=30)for(var wx=x+14;wx<x+w-18;wx+=26){c.fillStyle=r()>.42?lit:'rgba(255,255,255,.08)';c.fillRect(wx,wy,12,16);}}
+function turbine(c,x,y,h,a,col){c.strokeStyle=col;c.lineWidth=8;c.lineCap='round';c.beginPath();c.moveTo(x,y);c.lineTo(x,y-h);c.stroke();for(var i=0;i<3;i++){var t=a+i*Math.PI*2/3;c.beginPath();c.moveTo(x,y-h);c.lineTo(x+Math.cos(t)*h*.5,y-h+Math.sin(t)*h*.5);c.stroke();}c.fillStyle=col;c.beginPath();c.arc(x,y-h,9,0,7);c.fill();}
+function barn(c,x,y,s){c.save();c.translate(x,y);c.scale(s,s);c.fillStyle='#C2412D';c.fillRect(-90,-110,180,110);c.beginPath();c.moveTo(-100,-108);c.lineTo(0,-190);c.lineTo(100,-108);c.closePath();c.fillStyle='#8E2B1D';c.fill();c.strokeStyle='#fff';c.lineWidth=6;c.strokeRect(-40,-70,80,70);c.beginPath();c.moveTo(-40,-70);c.lineTo(40,0);c.moveTo(40,-70);c.lineTo(-40,0);c.stroke();c.fillStyle='#CFC8B8';c.fillRect(110,-150,34,150);c.beginPath();c.arc(127,-150,17,Math.PI,0);c.fill();c.restore();}
+function mountain(c,x,y,w,h,col,snow){c.fillStyle=col;c.beginPath();c.moveTo(x-w/2,y);c.lineTo(x-w*.08,y-h);c.lineTo(x+w*.04,y-h*.93);c.lineTo(x+w/2,y);c.closePath();c.fill();if(snow){c.fillStyle='#F4FAFF';c.beginPath();c.moveTo(x-w*.08,y-h);c.lineTo(x+w*.04,y-h*.93);c.lineTo(x+w*.13,y-h*.66);c.lineTo(x+w*.05,y-h*.72);c.lineTo(x-w*.02,y-h*.62);c.lineTo(x-w*.1,y-h*.7);c.lineTo(x-w*.17,y-h*.62);c.closePath();c.fill();}}
+var DRAW={
+ wetland:function(c){var r=seeded(7);sky(c,'#F7C98B','#FFF1D2',620);disc(c,1110,360,105,'#FFF4D6','rgba(255,244,214,.85)');cloud(c,250,200,1.5,.7);cloud(c,700,130,1.1,.6);hills(c,590,26,.006,1,'#8DBFA6',1000);
+  var g=c.createLinearGradient(0,600,0,1000);g.addColorStop(0,'#8FCBC9');g.addColorStop(1,'#25777E');c.fillStyle=g;c.fillRect(0,610,1500,390);
+  c.strokeStyle='rgba(255,244,214,.7)';c.lineWidth=6;c.lineCap='round';[[1010,650,200],[1040,690,150],[990,735,260],[1060,785,120]].forEach(function(p){c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(p[0]+p[2],p[1]);c.stroke();});
+  c.fillStyle='#3E8F55';[[300,860,70,22],[620,930,90,26],[1230,880,80,24],[900,950,60,18]].forEach(function(p){c.beginPath();c.ellipse(p[0],p[1],p[2],p[3],0,0,7);c.fill();});
+  reeds(c,80,930,16,330,'#3F7D4E',r);reeds(c,1400,960,18,380,'#3F7D4E',r);reeds(c,1180,640,10,150,'#5B9A6A',r);stork(c,520,610,1.5);},
+ island:function(c){var r=seeded(11);sky(c,'#7FCDF3','#E8F8FF',600);disc(c,1180,250,90,'#FFF6C9','rgba(255,246,201,.9)');cloud(c,200,180,1.5,.9);cloud(c,820,300,1.0,.8);
+  var g=c.createLinearGradient(0,560,0,1000);g.addColorStop(0,'#21A4C8');g.addColorStop(1,'#0A5A85');c.fillStyle=g;c.fillRect(0,560,1500,440);
+  c.fillStyle='#E9D59A';c.beginPath();c.ellipse(560,650,400,70,0,0,7);c.fill();
+  c.save();c.beginPath();c.ellipse(560,650,400,70,0,0,7);c.clip();c.fillStyle='#E9D59A';c.fillRect(100,590,900,140);c.restore();
+  c.fillStyle='#4FA358';c.beginPath();c.ellipse(560,620,280,70,0,Math.PI,0);c.fill();palm(c,470,640,1.2,-70);palm(c,640,640,1.5,60);
+  c.fillStyle='#F2D9A0';c.beginPath();c.ellipse(1240,640,150,26,0,0,7);c.fill();palm(c,1240,640,.6,30);
+  c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=5;c.lineCap='round';for(var i=0;i<22;i++){var x=r()*1400+40,y=720+r()*250;c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+30,y-14,x+60,y);c.stroke();}
+  var cols=['#FF7A8A','#FFB347','#B58CF1'];for(var j=0;j<10;j++){c.fillStyle=cols[j%3];c.beginPath();c.arc(120+j*58+r()*20,805+Math.sin(j)*10,18+r()*12,0,7);c.fill();}},
+ corridor:function(c){var r=seeded(5);sky(c,'#35356B','#F2A067',640);disc(c,330,230,60,'#FFF3D0','rgba(255,243,208,.6)');for(var i=0;i<40;i++){c.fillStyle='rgba(255,255,255,'+(0.3+r()*.5)+')';c.fillRect(r()*1500,r()*320,3,3);}
+  hills(c,560,30,.005,0,'#3F4E7A',1000);hills(c,620,36,.007,2,'#2E5B55',1000);hills(c,700,40,.006,4,'#1F4A3F',1000);
+  for(var k=0;k<14;k++)pine(c,40+k*110+r()*40,640+r()*60,.9+r()*.5,'#17382F');
+  c.fillStyle='rgba(247,220,160,.85)';c.beginPath();c.moveTo(690,640);c.lineTo(810,640);c.lineTo(1160,1000);c.lineTo(340,1000);c.closePath();c.fill();
+  c.fillStyle='rgba(23,56,47,.95)';c.fillRect(0,780,330,220);c.fillRect(1170,760,330,240);for(var m=0;m<9;m++)pine(c,60+m*90,830+r()*60,1.4+r()*.4,'#10281F');for(var n=0;n<8;n++)pine(c,1220+n*70,820+r()*70,1.5+r()*.4,'#10281F');
+  c.fillStyle='#F7E04B';[[230,860],[290,860]].forEach(function(p){c.beginPath();c.ellipse(p[0],p[1],22,13,0,0,7);c.fill();c.fillStyle='#1B1B1B';c.beginPath();c.ellipse(p[0]+2,p[1],6,11,0,0,7);c.fill();c.fillStyle='#F7E04B';});},
+ farm:function(c){var r=seeded(9);sky(c,'#B9E3FF','#FFF5D8',600);disc(c,250,230,85,'#FFE88A','rgba(255,232,138,.9)');cloud(c,720,170,1.4,.95);cloud(c,1200,260,1.1,.85);
+  hills(c,520,40,.005,1,'#9ACB6A',1000);hills(c,640,46,.006,3,'#7DB556',1000);
+  var cols=['#C9B84B','#6CA84C','#D6B94E','#58A056'];for(var i=0;i<9;i++){c.fillStyle=cols[i%4];c.beginPath();var y0=700+i*36;c.moveTo(0,y0+30);for(var x=0;x<=1500;x+=20)c.lineTo(x,y0+Math.sin(x*.004+i)*20);c.lineTo(1500,1000);c.lineTo(0,1000);c.closePath();c.fill();}
+  barn(c,1130,690,1.7);c.fillStyle='#5A3E2B';c.fillRect(325,610,14,100);c.fillStyle='#4C9A4F';c.beginPath();c.arc(332,590,56,0,7);c.fill();c.beginPath();c.arc(300,620,38,0,7);c.fill();c.beginPath();c.arc(366,622,38,0,7);c.fill();
+  for(var j=0;j<6;j++){c.fillStyle='#2E6B34';c.fillRect(60+j*40,900+Math.sin(j)*4,6,40);}},
+ city:function(c){var r=seeded(13);sky(c,'#27406F','#F7A87C',720);disc(c,1160,430,70,'#FFE9C6','rgba(255,214,170,.7)');
+  hills(c,640,34,.005,1,'#35506E',1000);turbine(c,260,690,230,.3,'#E9EEF5');turbine(c,430,700,190,1.1,'#E9EEF5');turbine(c,1320,690,210,.7,'#E9EEF5');
+  var xs=[0,130,270,380,520,640,780,900,1040,1170,1300,1410],hs=[360,520,300,640,430,560,340,600,450,520,380,470],cols=['#1B2A47','#223557','#18233D'];
+  for(var i=0;i<xs.length;i++)building(c,xs[i],1000-hs[i],120,hs[i],cols[i%3],'#FFD36B',r);
+  var g=c.createLinearGradient(0,760,0,1000);g.addColorStop(0,'rgba(247,168,124,0)');g.addColorStop(1,'rgba(247,168,124,.45)');c.fillStyle=g;c.fillRect(0,760,1500,240);},
+ mountain:function(c){var r=seeded(3);sky(c,'#98D0F3','#F2FAFF',620);disc(c,1200,200,80,'#FFF6D2','rgba(255,246,210,.9)');cloud(c,260,170,1.3,.9);cloud(c,820,250,1.0,.85);
+  mountain(c,350,700,800,470,'#7B8FB0',true);mountain(c,1000,700,900,540,'#6A7FA4',true);mountain(c,700,720,700,360,'#56709A',true);hills(c,660,26,.007,1,'#4C8A5E',1000);
+  c.fillStyle='#3F7A52';c.fillRect(0,720,1500,280);hills(c,730,30,.008,3,'#3F7A52',1000);
+  c.strokeStyle='#7FC6E8';c.lineWidth=70;c.lineCap='round';c.beginPath();c.moveTo(740,700);c.bezierCurveTo(640,780,900,840,720,900);c.bezierCurveTo(660,940,760,980,720,1010);c.stroke();c.strokeStyle='rgba(255,255,255,.7)';c.lineWidth=6;c.beginPath();c.moveTo(740,700);c.bezierCurveTo(660,780,880,840,720,900);c.stroke();
+  for(var i=0;i<16;i++){var x=r()<.5?40+r()*520:900+r()*560;pine(c,x,830+r()*140,1.3+r()*.8,'#1F5A38');}}};
+
+/* ====== postcard drawing ====== */
+function wrap(c,text,maxW){var words=String(text).split(/\s+/),lines=[],cur='';words.forEach(function(w){var t=cur?cur+' '+w:w;if(c.measureText(t).width>maxW&&cur){lines.push(cur);cur=w;}else cur=t;});if(cur)lines.push(cur);return lines;}
+function front(c,S){var sc=byId(SCENES,S.scene),tp=topic(S.top);c.save();c.fillStyle='#fff';c.fillRect(0,0,1500,1000);c.beginPath();c.rect(26,26,1448,948);c.clip();c.translate(26,26);c.scale(1448/1500,948/1000);DRAW[S.scene](c);c.restore();
+  c.save();c.translate(70,70);c.rotate(-.025);c.font='italic 52px Georgia,serif';c.lineJoin='round';c.strokeStyle='rgba(9,76,81,.9)';c.lineWidth=9;c.fillStyle='#fff';c.strokeText('Greetings from',0,50);c.fillText('Greetings from',0,50);
+  c.font='bold 128px Georgia,serif';c.lineWidth=14;var t=sc.place.charAt(0).toUpperCase()+sc.place.slice(1);if(c.measureText(t+'!').width>1250)c.font='bold 100px Georgia,serif';c.strokeText(t+'!',0,170);c.fillText(t+'!',0,170);c.restore();
+  var cap=tp?tp.tag:'';c.font='italic 40px Georgia,serif';var lines=wrap(c,cap,1200),bh=lines.length*52+36,by=950-bh;c.fillStyle='rgba(9,40,44,.78)';rr(c,70,by,1360,bh,18);c.fill();c.fillStyle='#fff';c.textAlign='left';lines.forEach(function(l,i){c.fillText(l,98,by+56+i*52);});}
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function back(c,S){var rec=byId(RECIPIENTS,S.rec)||RECIPIENTS[0],sc=byId(SCENES,S.scene),top=topic(S.top),sur=topic(S.sur),name=(S.name||'').trim();
+  c.fillStyle='#FBF3DD';c.fillRect(0,0,1500,1000);c.strokeStyle='#D9CBA5';c.lineWidth=3;c.strokeRect(24,24,1452,952);c.strokeStyle='#CBB98C';c.beginPath();c.moveTo(860,80);c.lineTo(860,920);c.stroke();
+  c.fillStyle='#2B2A33';c.textAlign='left';c.font='italic 52px Georgia,serif';c.fillText(rec.dear,76,128);
+  c.font='italic 36px Georgia,serif';var lines=wrap(c,S.msg||'',690).slice(0,8);c.strokeStyle='#E3D6B1';c.lineWidth=2;for(var i=0;i<8;i++){c.beginPath();c.moveTo(76,196+i*50+10);c.lineTo(800,196+i*50+10);c.stroke();}
+  c.fillStyle='#2B2A33';lines.forEach(function(l,i){c.fillText(l,76,196+i*50);});
+  c.font='italic 38px Georgia,serif';c.textAlign='right';c.fillText('\u2014 '+(name||'Me'),800,196+8*50+22);c.textAlign='left';
+  c.font='bold 25px Calibri,Arial,sans-serif';c.fillStyle='#094C51';c.fillText('The idea I am keeping:',76,700);c.font='27px Calibri,Arial,sans-serif';c.fillStyle='#2B2A33';var tn=top?(top.short||top.name):'';var tl=wrap(c,tn,720).slice(0,2);tl.forEach(function(l,i){c.fillText(l,76,733+i*32);});
+  var y2=733+tl.length*32+34;c.font='bold 25px Calibri,Arial,sans-serif';c.fillStyle='#E85D4A';c.fillText('What surprised me most:',76,y2);c.font='27px Calibri,Arial,sans-serif';c.fillStyle='#2B2A33';wrap(c,sur?(sur.short||sur.name):'',720).slice(0,2).forEach(function(l,i){c.fillText(l,76,y2+33+i*32);});
+  c.font='bold 25px Calibri,Arial,sans-serif';c.fillStyle='#094C51';c.fillText('Tiny pledges:',910,790);c.font='24px Calibri,Arial,sans-serif';c.fillStyle='#2B2A33';var py=824;(S.pledges||[]).forEach(function(p){var ls=wrap(c,'\u2022 '+p,500);ls.slice(0,3).forEach(function(l,i){c.fillText(i?'   '+l:l,910,py);py+=29;});py+=8;});
+  /* stamp */
+  var sx=1230,sy=70,sw=190,sh=230;c.fillStyle=sc.stamp;c.fillRect(sx,sy,sw,sh);c.fillStyle='#FBF3DD';for(var k=0;k<=sw;k+=19){c.beginPath();c.arc(sx+k,sy,7,0,7);c.arc(sx+k,sy+sh,7,0,7);c.fill();}for(var m=0;m<=sh;m+=19){c.beginPath();c.arc(sx,sy+m,7,0,7);c.arc(sx+sw,sy+m,7,0,7);c.fill();}
+  c.fillStyle='rgba(255,255,255,.25)';c.fillRect(sx+14,sy+14,sw-28,sh-28);c.fillStyle='#fff';c.beginPath();c.moveTo(sx+95,sy+176);c.quadraticCurveTo(sx+30,sy+130,sx+60,sy+60);c.quadraticCurveTo(sx+140,sy+60,sx+95,sy+176);c.fill();c.strokeStyle=sc.stamp;c.lineWidth=5;c.beginPath();c.moveTo(sx+95,sy+176);c.lineTo(sx+78,sy+86);c.stroke();c.fillStyle='#fff';c.font='bold 21px Calibri,Arial,sans-serif';c.textAlign='center';c.fillText('ONE PLANET',sx+95,sy+208);c.textAlign='left';
+  /* postmark */
+  var d=new Date().toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}).toUpperCase();c.strokeStyle='rgba(60,50,40,.7)';c.fillStyle='rgba(60,50,40,.8)';c.lineWidth=4;c.beginPath();c.arc(1120,200,86,0,7);c.stroke();c.lineWidth=2;c.beginPath();c.arc(1120,200,72,0,7);c.stroke();c.textAlign='center';c.font='bold 20px Calibri,Arial,sans-serif';c.fillText('SEMESTER\u2019S',1120,184);c.fillText('END',1120,208);c.font='bold 17px Calibri,Arial,sans-serif';c.fillText(d,1120,236);c.textAlign='left';
+  c.lineWidth=3;c.globalAlpha=.32;for(var w=0;w<4;w++){c.beginPath();c.moveTo(1200,130+w*26);for(var xx=1200;xx<=1440;xx+=20)c.lineTo(xx,130+w*26+(Math.floor((xx-1200)/20)%2?9:-9));c.stroke();}c.globalAlpha=1;
+  /* address */
+  c.strokeStyle='#CBB98C';c.lineWidth=3;[560,640,720].forEach(function(y){c.beginPath();c.moveTo(910,y);c.lineTo(1430,y);c.stroke();});
+  c.fillStyle='#2B2A33';c.font='italic 40px Georgia,serif';wrap(c,'To: '+rec.to,500).slice(0,2).forEach(function(l,i){c.fillText(l,916,548+i*0);});
+  c.font='italic 38px Georgia,serif';c.fillStyle='#2B2A33';c.fillText('From: '+(name||'a curious mind'),916,628);c.font='italic 30px Georgia,serif';c.fillStyle='#7C6F55';c.fillText('Delivered with care',916,708);}
+function draw(canvas,fn,S,w,h){canvas.width=w;canvas.height=h;var c=canvas.getContext('2d');c.save();c.scale(w/1500,h/1000);fn(c,S);c.restore();}
+
+/* ====== app ====== */
+var S={step:0,scene:null,top:null,sur:null,msg:'',pledges:[],rec:null,name:''};
+var STEPS=['Start','Scene','Topics','Message','Pledges','Address','Postcard'],main=document.getElementById('main');
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function toast(m){var t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(function(){t.style.display='none';},2400);}
+function dots(){$('dots').innerHTML=STEPS.map(function(x,i){return '<i class="'+(i<S.step?'on':i===S.step?'cur':'')+'"></i>';}).join('');}
+function ok(){var s=S.step;if(s===1)return !!S.scene;if(s===2)return !!S.top&&!!S.sur;if(s===3){var m=S.msg;STARTERS.forEach(function(t){m=m.split(t.replace('\u2026','')).join('');});return m.trim().length>=12;}if(s===4)return S.pledges.length>=1;if(s===5)return !!S.rec;return true;}
+function nav(back,next,nextLabel){return '<div class="btns"><button type="button" class="b alt" id="bk"'+(back?'':' disabled')+'>Back</button><button type="button" class="b" id="nx"'+(next?'':' disabled')+'>'+(nextLabel||'Next')+'</button></div>';}
+function render(){dots();window.scrollTo(0,0);var s=S.step;if(s===0)r0();else if(s===1)r1();else if(s===2)r2();else if(s===3)r3();else if(s===4)r4();else if(s===5)r5();else r6();
+  if($('bk'))$('bk').onclick=function(){S.step--;render();};if($('nx'))$('nx').onclick=function(){if(ok()){S.step++;render();}};}
+function r0(){main.innerHTML='<div class="card"><h2>You made it to the end of the semester.</h2><p>Before you go, make a postcard from everything you learned. Pick a scene, choose the topics that stuck with you, write a few words, and make a couple of tiny pledges. At the end you can download your postcard and keep it.</p><p class="muted">It takes about five minutes. Nothing here is graded, and nothing is saved or sent anywhere. Your postcard exists only on your screen and in the file you download.</p><div class="btns"><button type="button" class="b coral" id="nx">Let’s make a postcard</button></div></div>';}
+function r1(){main.innerHTML='<div class="card"><h2>Pick the front of your postcard</h2><p>Which place feels like your semester?</p><div class="scenes" role="group" aria-label="Scenes">'+SCENES.map(function(s){return '<button type="button" class="sc" data-id="'+s.id+'" aria-pressed="'+(S.scene===s.id)+'"><canvas width="500" height="333" aria-hidden="true"></canvas><span>'+s.name+'</span></button>';}).join('')+'</div>'+nav(true,ok())+'</div>';
+  Array.prototype.forEach.call(main.querySelectorAll('.sc'),function(b){var cv=b.querySelector('canvas'),c=cv.getContext('2d');c.save();c.scale(500/1500,333/1000);DRAW[b.dataset.id](c);c.restore();b.onclick=function(){S.scene=b.dataset.id;Array.prototype.forEach.call(main.querySelectorAll('.sc'),function(x){x.setAttribute('aria-pressed',x===b);});$('nx').disabled=false;};});}
+function chipsHTML(sel,cls){return '<div class="chips" role="group">'+TOPICS.map(function(t){return '<button type="button" class="chip '+cls+'" data-id="'+t.id+'" aria-pressed="'+(sel===t.id)+'">'+esc(t.name)+'</button>';}).join('')+'</div>';}
+function r2(){main.innerHTML='<div class="card"><h2>What stuck with you?</h2><p>Choose one topic for each question. They can be the same.</p><label class="q">Which topic stuck with you the most?</label>'+chipsHTML(S.top,'')+'<label class="q">Which topic surprised you the most?</label>'+chipsHTML(S.sur,'cor')+nav(true,ok())+'</div>';
+  var groups=main.querySelectorAll('.chips');[['top',groups[0]],['sur',groups[1]]].forEach(function(g){Array.prototype.forEach.call(g[1].querySelectorAll('.chip'),function(b){b.onclick=function(){S[g[0]]=b.dataset.id;Array.prototype.forEach.call(g[1].querySelectorAll('.chip'),function(x){x.setAttribute('aria-pressed',x===b);});$('nx').disabled=!ok();};});});}
+function r3(){main.innerHTML='<div class="card"><h2>Write your message</h2><p>A few honest words, in your own voice. It will be handwritten-style on the back of your postcard.</p><div class="hint">Need a way in? Tap a starter, then keep going.</div><div class="starters">'+STARTERS.map(function(t,i){return '<button type="button" class="chip" data-i="'+i+'">'+esc(t)+'</button>';}).join('')+'</div><label class="q" for="msg">Your message</label><textarea id="msg" maxlength="220" placeholder="Write 1 or 2 sentences…">'+esc(S.msg)+'</textarea><div class="count" id="cnt"></div>'+nav(true,ok())+'</div>';
+  var ta=$('msg');function upd(){S.msg=ta.value;$('cnt').textContent=ta.value.length+' / 220';$('nx').disabled=!ok();}upd();ta.addEventListener('input',upd);
+  Array.prototype.forEach.call(main.querySelectorAll('.starters .chip'),function(b){b.onclick=function(){var t=STARTERS[+b.dataset.i];ta.value=(ta.value?ta.value.replace(/\s*$/,' '):'')+t.replace('…','')+' ';ta.focus();upd();};});}
+function r4(){main.innerHTML='<div class="card"><h2>Make a tiny pledge or two</h2><p>Small things are easier to keep. Pick one or two that you could really do.</p><div class="chips" id="pl" role="group">'+PLEDGES.map(function(p,i){return '<button type="button" class="chip" data-i="'+i+'" aria-pressed="'+(S.pledges.indexOf(p)>-1)+'">'+esc(p)+'</button>';}).join('')+'</div><div class="hint" id="plh"></div>'+nav(true,ok())+'</div>';
+  function note(){$('plh').textContent=S.pledges.length+' of 2 chosen';}note();
+  Array.prototype.forEach.call(main.querySelectorAll('#pl .chip'),function(b){b.onclick=function(){var p=PLEDGES[+b.dataset.i],ix=S.pledges.indexOf(p);if(ix>-1){S.pledges.splice(ix,1);}else{if(S.pledges.length>=2){toast('Two is plenty. Unselect one to switch.');return;}S.pledges.push(p);}b.setAttribute('aria-pressed',S.pledges.indexOf(p)>-1);note();$('nx').disabled=!ok();};});}
+function r5(){main.innerHTML='<div class="card"><h2>Address your postcard</h2><p>Who is this one for?</p><div class="chips" id="rc" role="group">'+RECIPIENTS.map(function(r){return '<button type="button" class="chip" data-id="'+r.id+'" aria-pressed="'+(S.rec===r.id)+'">'+esc(r.to)+'</button>';}).join('')+'</div><label class="q" for="nm">Sign it with (optional): a first name or a nickname</label><input type="text" id="nm" maxlength="24" value="'+esc(S.name)+'" autocomplete="off" placeholder="Leave blank to sign as “Me”">'+nav(true,ok(),'Make my postcard')+'</div>';
+  $('nm').addEventListener('input',function(){S.name=this.value;});
+  Array.prototype.forEach.call(main.querySelectorAll('#rc .chip'),function(b){b.onclick=function(){S.rec=b.dataset.id;Array.prototype.forEach.call(main.querySelectorAll('#rc .chip'),function(x){x.setAttribute('aria-pressed',x===b);});$('nx').disabled=false;};});}
+function r6(){var rec=byId(RECIPIENTS,S.rec),text=rec.dear+'\n'+S.msg+'\n\u2014 '+(S.name.trim()||'Me')+'\n\nThe idea I am keeping: '+topic(S.top).name+'\nWhat surprised me most: '+topic(S.sur).name+'\nTiny pledges: '+S.pledges.join(' / ');
+  main.innerHTML='<div class="card"><h2>Your postcard is ready</h2><p>Front and back, made by you. Download it, keep it, or share it if you want to.</p><div class="pcs"><canvas id="cf" role="img" aria-label="Front of your postcard"></canvas><canvas id="cb" role="img" aria-label="Back of your postcard"></canvas></div><div class="btns"><button type="button" class="b coral" id="dl">Download my postcard (PNG)</button><button type="button" class="b alt" id="ch">Make changes</button><button type="button" class="b ghost" id="rs">Start over</button></div><details><summary>Read the text of your postcard</summary><p style="white-space:pre-wrap">'+esc(text)+'</p></details></div>';
+  draw($('cf'),front,S,1500,1000);draw($('cb'),back,S,1500,1000);
+  $('cf').setAttribute('aria-label','Front of your postcard: Greetings from '+byId(SCENES,S.scene).place+'. '+topic(S.top).tag);$('cb').setAttribute('aria-label','Back of your postcard. '+text.replace(/\n+/g,' '));
+  $('dl').onclick=function(){var o=document.createElement('canvas');o.width=1500;o.height=2040;var c=o.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,1500,2040);c.drawImage($('cf'),0,0);c.drawImage($('cb'),0,1040);o.toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);var n=(S.name.trim()||'my').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'my';a.download=n+'-semester-postcard.png';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);toast('Postcard downloaded.');},'image/png');};
+  $('ch').onclick=function(){S.step=1;render();};$('rs').onclick=function(){var z=$('dl').parentNode;z.innerHTML='<span style="font-weight:bold">Start over? Your postcard will be cleared.</span><button type="button" class="b coral" id="yes">Yes, start over</button><button type="button" class="b alt" id="no">Keep my postcard</button>';$('yes').onclick=function(){S={step:0,scene:null,top:null,sur:null,msg:'',pledges:[],rec:null,name:''};render();};$('no').onclick=function(){render();};$('no').focus();};}
+render();
+
+})();
+</script>
+</body>
+</html>
